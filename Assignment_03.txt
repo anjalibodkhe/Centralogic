@@ -1,0 +1,394 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+// DTO Classes
+
+public class Book
+{
+    public string UId { get; set; }
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public DateTime PublishedDate { get; set; }
+    public string ISBN { get; set; }
+    public bool IsIssued { get; set; }
+}
+
+public class Member
+{
+    public string UId { get; set; }
+    public string Name { get; set; }
+    public DateTime DateOfBirth { get; set; }
+    public string Email { get; set; }
+}
+
+public class Issue
+{
+    public string UId { get; set; }
+    public string BookId { get; set; }
+    public string MemberId { get; set; }
+    public DateTime IssueDate { get; set; }
+    public DateTime? ReturnDate { get; set; }
+    public bool isReturned { get; set; }
+}
+
+// Library Management System
+
+public class LibraryManagementSystem
+{
+    private List<Book> books = new List<Book>();
+    private List<Member> members = new List<Member>();
+    private List<Issue> issues = new List<Issue>();
+
+    // Book Operations
+
+    public void AddBook(Book book)
+    {
+        books.Add(book);
+    }
+
+    public Book GetBookByUId(string uid)
+    {
+        return books.FirstOrDefault(b => b.UId == uid);
+    }
+
+    public List<Book> GetBooksByName(string name)
+    {
+        return books.Where(b => b.Title.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+    }
+
+    public List<Book> GetAllBooks()
+    {
+        return books;
+    }
+
+    public List<Book> GetAvailableBooks()
+    {
+        return books.Where(b => !b.IsIssued).ToList();
+    }
+
+    public List<Book> GetIssuedBooks()
+    {
+        return books.Where(b => b.IsIssued).ToList();
+    }
+
+    public void UpdateBook(Book updatedBook)
+    {
+        var book = books.FirstOrDefault(b => b.UId == updatedBook.UId);
+        if (book != null)
+        {
+            book.Title = updatedBook.Title;
+            book.Author = updatedBook.Author;
+            book.PublishedDate = updatedBook.PublishedDate;
+            book.ISBN = updatedBook.ISBN;
+            book.IsIssued = updatedBook.IsIssued;
+        }
+    }
+
+    // Member Operations
+
+    public void AddMember(Member member)
+    {
+        members.Add(member);
+    }
+
+    public Member GetMemberByUId(string uid)
+    {
+        return members.FirstOrDefault(m => m.UId == uid);
+    }
+
+    public List<Member> GetAllMembers()
+    {
+        return members.ToList();
+    }
+
+    public void UpdateMember(Member updatedMember)
+    {
+        var member = members.FirstOrDefault(m => m.UId == updatedMember.UId);
+        if (member != null)
+        {
+            member.Name = updatedMember.Name;
+            member.DateOfBirth = updatedMember.DateOfBirth;
+            member.Email = updatedMember.Email;
+        }
+    }
+
+    // Issue Operations
+
+    public void IssueBook(Issue issue)
+    {
+        issues.Add(issue);
+        var book = books.FirstOrDefault(b => b.UId == issue.BookId);
+        if (book != null)
+        {
+            book.IsIssued = true;
+        }
+    }
+
+    public Issue GetIssueByUId(string uid)
+    {
+        return issues.FirstOrDefault(i => i.UId == uid);
+    }
+
+    public void UpdateIssue(Issue updatedIssue)
+    {
+        var issue = issues.FirstOrDefault(i => i.UId == updatedIssue.UId);
+        if (issue != null)
+        {
+            issue.BookId = updatedIssue.BookId;
+            issue.MemberId = updatedIssue.MemberId;
+            issue.IssueDate = updatedIssue.IssueDate;
+            issue.ReturnDate = updatedIssue.ReturnDate;
+            issue.isReturned = updatedIssue.isReturned;
+            
+            var book = books.FirstOrDefault(b => b.UId == updatedIssue.BookId);
+            if (book != null)
+            {
+                book.IsIssued = !updatedIssue.isReturned;
+            }
+        }
+    }
+}
+
+// Main Program
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        var library = new LibraryManagementSystem();
+        
+        while (true)
+        {
+            Console.WriteLine("Library Management System");
+            Console.WriteLine("1. Add Book");
+            Console.WriteLine("2. Add Member");
+            Console.WriteLine("3. Issue Book");
+            Console.WriteLine("4. Retrieve Book by UId");
+            Console.WriteLine("5. Retrieve Books by Name");
+            Console.WriteLine("6. Retrieve All Books");
+            Console.WriteLine("7. Retrieve All Available Books");
+            Console.WriteLine("8. Retrieve All Issued Books");
+            Console.WriteLine("9. Update Book");
+            Console.WriteLine("10. Update Member");
+            Console.WriteLine("11. Exit");
+            Console.Write("Select an option: ");
+            var option = Console.ReadLine();
+            
+            switch (option)
+            {
+                case "1":
+                    AddBook(library);
+                    break;
+                case "2":
+                    AddMember(library);
+                    break;
+                case "3":
+                    IssueBook(library);
+                    break;
+                case "4":
+                    RetrieveBookByUId(library);
+                    break;
+                case "5":
+                    RetrieveBooksByName(library);
+                    break;
+                case "6":
+                    RetrieveAllBooks(library);
+                    break;
+                case "7":
+                    RetrieveAllAvailableBooks(library);
+                    break;
+                case "8":
+                    RetrieveAllIssuedBooks(library);
+                    break;
+                case "9":
+                    UpdateBook(library);
+                    break;
+                case "10":
+                    UpdateMember(library);
+                    break;
+                case "11":
+                    return;
+                default:
+                    Console.WriteLine("Invalid option. Please try again.");
+                    break;
+            }
+        }
+    }
+
+    static void AddBook(LibraryManagementSystem library)
+    {
+        var book = new Book();
+        Console.Write("Enter Book UId: ");
+        book.UId = Console.ReadLine();
+        Console.Write("Enter Title: ");
+        book.Title = Console.ReadLine();
+        Console.Write("Enter Author: ");
+        book.Author = Console.ReadLine();
+        Console.Write("Enter Published Date (yyyy-mm-dd): ");
+        book.PublishedDate = DateTime.Parse(Console.ReadLine());
+        Console.Write("Enter ISBN: ");
+        book.ISBN = Console.ReadLine();
+        book.IsIssued = false;
+        library.AddBook(book);
+        Console.WriteLine("Book added successfully.");
+    }
+
+    static void AddMember(LibraryManagementSystem library)
+    {
+        var member = new Member();
+        Console.Write("Enter Member UId: ");
+        member.UId = Console.ReadLine();
+        Console.Write("Enter Name: ");
+        member.Name = Console.ReadLine();
+        Console.Write("Enter Date of Birth (yyyy-mm-dd): ");
+        member.DateOfBirth = DateTime.Parse(Console.ReadLine());
+        Console.Write("Enter Email: ");
+        member.Email = Console.ReadLine();
+        library.AddMember(member);
+        Console.WriteLine("Member added successfully.");
+    }
+
+    static void IssueBook(LibraryManagementSystem library)
+    {
+        var issue = new Issue();
+        Console.Write("Enter Issue UId: ");
+        issue.UId = Console.ReadLine();
+        Console.Write("Enter Book UId: ");
+        issue.BookId = Console.ReadLine();
+        Console.Write("Enter Member UId: ");
+        issue.MemberId = Console.ReadLine();
+        issue.IssueDate = DateTime.Now;
+        issue.isReturned = false;
+        library.IssueBook(issue);
+        Console.WriteLine("Book issued successfully.");
+    }
+
+    static void RetrieveBookByUId(LibraryManagementSystem library)
+    {
+        Console.Write("Enter Book UId: ");
+        var uid = Console.ReadLine();
+        var book = library.GetBookByUId(uid);
+        if (book != null)
+        {
+            Console.WriteLine($"Title: {book.Title}, Author: {book.Author}, Published Date: {book.PublishedDate}, ISBN: {book.ISBN}, Is Issued: {book.IsIssued}");
+        }
+        else
+        {
+            Console.WriteLine("Book not found.");
+        }
+    }
+
+    static void RetrieveBooksByName(LibraryManagementSystem library)
+    {
+        Console.Write("Enter Book Name: ");
+        var name = Console.ReadLine();
+        var books = library.GetBooksByName(name);
+        if (books.Any())
+        {
+            foreach (var book in books)
+            {
+                Console.WriteLine($"UId: {book.UId}, Title: {book.Title}, Author: {book.Author}, Published Date: {book.PublishedDate}, ISBN: {book.ISBN}, Is Issued: {book.IsIssued}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("No books found with that name.");
+        }
+    }
+
+    static void RetrieveAllBooks(LibraryManagementSystem library)
+    {
+        var books = library.GetAllBooks();
+        if (books.Any())
+        {
+            foreach (var book in books)
+            {
+                Console.WriteLine($"UId: {book.UId}, Title: {book.Title}, Author: {book.Author}, Published Date: {book.PublishedDate}, ISBN: {book.ISBN}, Is Issued: {book.IsIssued}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("No books available.");
+        }
+    }
+
+    static void RetrieveAllAvailableBooks(LibraryManagementSystem library)
+    {
+        var books = library.GetAvailableBooks();
+        if (books.Any())
+        {
+            foreach (var book in books)
+            {
+                Console.WriteLine($"UId: {book.UId}, Title: {book.Title}, Author: {book.Author}, Published Date: {book.PublishedDate}, ISBN: {book.ISBN}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("No available books.");
+        }
+    }
+
+    static void RetrieveAllIssuedBooks(LibraryManagementSystem library)
+    {
+        var books = library.GetIssuedBooks();
+        if (books.Any())
+        {
+            foreach (var book in books)
+            {
+                Console.WriteLine($"UId: {book.UId}, Title: {book.Title}, Author: {book.Author}, Published Date: {book.PublishedDate}, ISBN: {book.ISBN}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("No issued books.");
+        }
+    }
+
+    static void UpdateBook(LibraryManagementSystem library)
+    {
+        Console.Write("Enter Book UId: ");
+        var uid = Console.ReadLine();
+        var book = library.GetBookByUId(uid);
+        if (book != null)
+        {
+            Console.Write("Enter new Title: ");
+            book.Title = Console.ReadLine();
+            Console.Write("Enter new Author: ");
+            book.Author = Console.ReadLine();
+            Console.Write("Enter new Published Date (yyyy-mm-dd): ");
+            book.PublishedDate = DateTime.Parse(Console.ReadLine());
+            Console.Write("Enter new ISBN: ");
+            book.ISBN = Console.ReadLine();
+            library.UpdateBook(book);
+            Console.WriteLine("Book updated successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Book not found.");
+        }
+    }
+
+    static void UpdateMember(LibraryManagementSystem library)
+    {
+        Console.Write("Enter Member UId: ");
+        var uid = Console.ReadLine();
+        var member = library.GetMemberByUId(uid);
+        if (member != null)
+        {
+            Console.Write("Enter new Name: ");
+            member.Name = Console.ReadLine();
+            Console.Write("Enter new Date of Birth (yyyy-mm-dd): ");
+            member.DateOfBirth = DateTime.Parse(Console.ReadLine());
+            Console.Write("Enter new Email: ");
+            member.Email = Console.ReadLine();
+            library.UpdateMember(member);
+            Console.WriteLine("Member updated successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Member not found.");
+	    Console.Readline();
+        }
+    }
+}
